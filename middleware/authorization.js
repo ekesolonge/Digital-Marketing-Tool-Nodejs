@@ -50,7 +50,4 @@ const checkPermission = (action, data) => {
 };
 
 // Export modules
-module.exports.authenticate = authenticate;
-module.exports.manageUser = manageUser;
-module.exports.manageRole = manageRole;
-module.exports.managePermission = managePermission;
+module.exports = { authenticate, manageUser, manageRole, managePermission };

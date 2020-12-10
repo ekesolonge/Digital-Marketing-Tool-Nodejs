@@ -1,6 +1,6 @@
 const contactUs = (app) => {
   const connection = require("../models/db"); // database module
-  const auth = require("./authController");
+  const auth = require("../middleware/authorization");
   const Joi = require("joi");
 
   //POST
