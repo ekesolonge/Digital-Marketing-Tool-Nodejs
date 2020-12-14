@@ -31,7 +31,7 @@ router.post("/", authenticate, (req, res) => {
 
   // INSERT into database
   connection.query(
-    `insert into email_templates (user_id,name,json,html) values('${req.body.user_id}','${req.body.name}','${req.body.json}','${req.body.html}')`,
+    `insert into email_templates (user_id,name,json,html) values('${req.user.data.userId}','${req.body.name}','${req.body.json}','${req.body.html}')`,
     (err, resp) => {
       if (err) return res.status(400).send(err);
       res.send("Email Template created successfully.");
@@ -50,7 +50,7 @@ router.put("/:id", authenticate, (req, res) => {
         res.status(404).send(`No record found at ID ${req.params.id}`);
       } else {
         let email_templates = db_res;
-        let user_id = req.body.user_id;
+        let user_id = req.user.data.userId;
         let name = req.body.name;
         let json = req.body.json;
         let html = req.body.html;
@@ -92,7 +92,6 @@ router.delete("/:id", authenticate, (req, res) => {
 
 function validateTemplate(template) {
   const schema = Joi.object({
-    user_id: Joi.required(),
     name: Joi.string().min(3).required(),
     json: Joi.string().empty("").required(),
     html: Joi.string().empty("").required(),

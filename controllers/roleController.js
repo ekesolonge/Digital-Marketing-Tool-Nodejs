@@ -1,16 +1,16 @@
 var roleController = (app) => {
   const connection = require("../models/db");
-  const auth = require("./authController");
+  const { authenticate, manageRole } = require("../middleware/authorization"); // authorization middleware
 
   // Get role API
-  app.get("/role", auth.authenticate, auth.manageRole, (req, res) => {
+  app.get("/role", authenticate, manageRole, (req, res) => {
     connection.query(`select * from role`, (err, resp) => {
       if (err) throw err;
       res.send(resp);
     });
   });
 
-  app.get("/role/:id", auth.authenticate, auth.manageRole, (req, res) => {
+  app.get("/role/:id", authenticate, manageRole, (req, res) => {
     connection.query(
       `select * from role where id = ${req.params.id}`,
       (err, resp) => {
@@ -22,7 +22,7 @@ var roleController = (app) => {
   });
 
   // Delete an role API
-  app.delete("/role/:id", auth.authenticate, auth.manageRole, (req, res) => {
+  app.delete("/role/:id", authenticate, manageRole, (req, res) => {
     connection.query(
       `delete from role where id = ${req.params.id}`,
       (err, resp) => {
@@ -33,7 +33,7 @@ var roleController = (app) => {
   });
 
   // REST API to Insert role
-  app.post("/role", auth.authenticate, auth.manageRole, (req, res) => {
+  app.post("/role", authenticate, manageRole, (req, res) => {
     if (!req.body.roleName || !req.body.roleDescription)
       return res.status(400).send("Please fill all required fields");
 
@@ -51,7 +51,7 @@ var roleController = (app) => {
   });
 
   //rest api to update role into mysql database
-  app.put("/role/:id", auth.authenticate, auth.manageRole, (req, res) => {
+  app.put("/role/:id", authenticate, manageRole, (req, res) => {
     connection.query(
       `update role set roleName = '${req.body.roleName}', roleDescription = '${req.body.roleDescription}' where id=${req.params.id}`,
       (err, response) => {

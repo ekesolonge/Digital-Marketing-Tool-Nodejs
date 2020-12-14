@@ -241,6 +241,7 @@ router.post("/login", (req, res) => {
               (err, resPerm) => {
                 if (err) return res.status(401).send(err);
                 resp[0].permissions = resPerm;
+                delete resp[0].password;
 
                 // Token logic
                 let data = { data: resp[0] };

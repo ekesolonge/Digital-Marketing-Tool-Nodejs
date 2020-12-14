@@ -1,6 +1,6 @@
 const newsletter = (app) => {
   const connection = require("../models/db"); // database module
-  const auth = require("../middleware/authorization");
+  const { authenticate } = require("../middleware/authorization"); // authorization middleware
   const Joi = require("joi");
 
   // subscribe to newsletter
@@ -19,7 +19,7 @@ const newsletter = (app) => {
   });
 
   // GET
-  app.get("/newsletter", auth.authenticate, (req, res) => {
+  app.get("/newsletter", authenticate, (req, res) => {
     connection.query(`select * from newsletter`, (err, resp) => {
       if (err) throw err;
       res.send(resp);
@@ -27,7 +27,7 @@ const newsletter = (app) => {
   });
 
   // Get by id
-  app.get("/newsletter/:id", auth.authenticate, (req, res) => {
+  app.get("/newsletter/:id", authenticate, (req, res) => {
     connection.query(
       `select * from newsletter where id = ${req.params.id}`,
       (err, resp) => {
@@ -39,7 +39,7 @@ const newsletter = (app) => {
   });
 
   // DELETE
-  app.delete("/newsletter/:id", auth.authenticate, (req, res) => {
+  app.delete("/newsletter/:id", authenticate, (req, res) => {
     connection.query(
       `delete from newsletter where id = ${req.params.id}`,
       (err, resp) => {

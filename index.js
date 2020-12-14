@@ -4,7 +4,7 @@ const bodyParser = require("body-parser"); // body-parser middleware
 // Routes
 const users = require("./routes/users");
 const emailTemplate = require("./routes/emailTemplates");
-const audience = require("./routes/audience")
+const audience = require("./routes/audience");
 
 const suggestions = require("./controllers/suggestions"); //Suggestions Controller
 const reply = require("./controllers/reply"); //Reply Controller
@@ -20,6 +20,7 @@ const port = process.env.PORT || 3000; // set port
 const app = express(); // express init
 app.use(bodyParser.json()); // Middleware use with express
 
+// Routes
 app.use("/api/users", users);
 app.use("/api/emailTemplates", emailTemplate);
 app.use("/api/audience", audience);

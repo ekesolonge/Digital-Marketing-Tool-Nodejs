@@ -1,6 +1,6 @@
 const contactUs = (app) => {
   const connection = require("../models/db"); // database module
-  const auth = require("../middleware/authorization");
+  const { authenticate } = require("../middleware/authorization"); // authorization middleware
   const Joi = require("joi");
 
   //POST
@@ -24,15 +24,16 @@ const contactUs = (app) => {
   });
 
   // GET
-  app.get("/contactUs", auth.authenticate, (req, res) => {
+  app.get("/contactUs", authenticate, (req, res) => {
     connection.query(`select * from contact_us`, (err, resp) => {
       if (err) throw err;
+      console.log(req.user.data);
       res.send(resp);
     });
   });
 
   // Get by id
-  app.get("/contactUs/:id", auth.authenticate, (req, res) => {
+  app.get("/contactUs/:id", authenticate, (req, res) => {
     connection.query(
       `select * from contact_us where id = ${req.params.id}`,
       (err, resp) => {
@@ -44,7 +45,7 @@ const contactUs = (app) => {
   });
 
   // DELETE
-  app.delete("/contactUs/:id", auth.authenticate, (req, res) => {
+  app.delete("/contactUs/:id", authenticate, (req, res) => {
     connection.query(
       `delete from contact_us where id = ${req.params.id}`,
       (err, resp) => {
