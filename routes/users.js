@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const { authenticate, manageUser } = require("../middleware/authorization"); // authorization middleware
 const assignRole = require("../middleware/defaultRole");
 const Joi = require("joi"); // validator
+const upload = require("../middleware/uploadImage");
 
 router.get("/", authenticate, manageUser, (req, res) => {
   // Get users
@@ -105,57 +106,71 @@ router.post("/", authenticate, manageUser, (req, res) => {
 });
 
 // Edit Users
-router.put("/:id", authenticate, manageUser, (req, res) => {
-  let {
-    firstName,
-    lastName,
-    username,
-    tel,
-    email,
-    password,
-    website,
-    picture,
-  } = req.body;
+router.put(
+  "/:id",
+  authenticate,
+  manageUser,
+  upload.single("image"),
+  (req, res) => {
+    let {
+      firstName,
+      lastName,
+      username,
+      tel,
+      email,
+      password,
+      website,
+      picture,
+    } = req.body;
 
-  connection.query(
-    `SELECT * FROM users WHERE id=${req.params.id}`,
-    (err, db_res) => {
-      if (err) {
-        res.send(err);
-      } else if (db_res.length < 1) {
-        res.status(404).send(`Error! User does not exist.`);
-      } else {
-        let users = db_res;
-        if (firstName == undefined) firstName = users[0].firstName;
+    connection.query(
+      `SELECT * FROM users WHERE id=${req.params.id}`,
+      (err, db_res) => {
+        if (err) {
+          res.send(err);
+        } else if (db_res.length < 1) {
+          res.status(404).send(`Error! User does not exist.`);
+        } else {
+          let users = db_res;
+          if (firstName == undefined) firstName = users[0].firstName;
 
-        if (lastName == undefined) lastName = users[0].lastName;
+          if (lastName == undefined) lastName = users[0].lastName;
 
-        if (username == undefined) username = users[0].username;
+          if (username == undefined) username = users[0].username;
 
-        if (tel == undefined) tel = users[0].tel;
+          if (tel == undefined) tel = users[0].tel;
 
-        if (email == undefined) email = users[0].email;
+          if (email == undefined) email = users[0].email;
 
-        if (password == undefined) password = users[0].password;
+          if (password == undefined) password = users[0].password;
 
-        if (website == undefined) website = users[0].website;
+          if (website == undefined) website = users[0].website;
 
-        if (picture == undefined) picture = users[0].picture;
+          if (picture == undefined) picture = users[0].picture;
 
-        // Hash password
-        bcrypt.hash(password, 10, (err, hash) => {
-          if (err) return res.send(err);
+          // Hash password
+          bcrypt.hash(password, 10, (err, hash) => {
+            if (err) return res.send(err);
 
-          let sql = `update users set firstName = '${firstName}', lastName = '${lastName}',username = '${username}',tel = '${tel}',email = '${email}',password = '${hash}',website = '${website}',picture = '${picture}' where id = ${req.params.id}`;
-          connection.query(sql, (err, db_res) => {
-            if (err) return res.status(400).send(err);
-            res.send(`User Updated Successfully at ID: ${req.params.id}!`);
+            // Store Path of image uploaded
+            var filePath;
+            if (req.file) {
+              filePath = req.file.path.split("\\").join("/");
+            } else {
+              filePath = users[0].picture;
+            }
+
+            let sql = `update users set firstName = '${firstName}', lastName = '${lastName}',username = '${username}',tel = '${tel}',email = '${email}',password = '${hash}',website = '${website}',picture = '${filePath}' where id = ${req.params.id}`;
+            connection.query(sql, (err, db_res) => {
+              if (err) return res.status(400).send(err);
+              res.send(`User Updated Successfully at ID: ${req.params.id}!`);
+            });
           });
-        });
+        }
       }
-    }
-  );
-});
+    );
+  }
+);
 
 // Signup
 router.post("/signup", (req, res) => {
