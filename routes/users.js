@@ -8,6 +8,7 @@ const { authenticate, manageUser } = require("../middleware/authorization"); // 
 const assignRole = require("../middleware/defaultRole");
 const Joi = require("joi"); // validator
 const upload = require("../middleware/uploadImage");
+const auditManager = require('../controllers/trailController')
 
 router.get("/", authenticate, manageUser, (req, res) => {
   // Get users
@@ -244,6 +245,8 @@ router.post("/login", (req, res) => {
         res.statusCode = 401;
         res.send("Invalid username and password");
       } else {
+
+     
         bcrypt.compare(req.body.password, resp[0].password, (err, result) => {
           if (result === false) {
             res.statusCode = 401;
