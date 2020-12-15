@@ -10,6 +10,9 @@ const Joi = require("joi"); // validator
 const upload = require("../middleware/uploadImage");
 const auditManager = require('../controllers/trailController')
 
+const logTrail = require("../middleware/auditTrail");
+
+
 router.get("/", authenticate, manageUser, (req, res) => {
   // Get users
   connection.query(`select * from users`, (err, resp) => {
@@ -243,7 +246,7 @@ router.post("/login", (req, res) => {
     (err, resp) => {
       if (err || resp.length < 1) {
         res.statusCode = 401;
-        res.send("Invalid username and password");
+        res.send("Invalid username and password.");
       } else {
 
      
@@ -251,6 +254,12 @@ router.post("/login", (req, res) => {
           if (result === false) {
             res.statusCode = 401;
             res.send("Invalid username and password");
+            let trail = {
+              actor: "anonymous",
+              action: `anonymous user ${req.body.username} login attempt failed`,
+              type: "danger",
+            };
+            logTrail(trail);
           }
           if (result === true) {
             // Check permissions
@@ -271,6 +280,13 @@ router.post("/login", (req, res) => {
                   accessToken: token,
                 };
                 res.send(tokenData);
+
+                let trail = {
+                  actor: req.body.username,
+                  action: `successful login`,
+                  type: "success",
+                };
+                logTrail(trail);
               }
             );
           }

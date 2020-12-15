@@ -1,8 +1,12 @@
 var roleController = (app) => {
   const connection = require("../models/db");
-  const { authenticate, manageRole } = require("../middleware/authorization"); // authorization middleware
+  const {
+    authenticate,
+    manageRole,
+    manageUser,
+  } = require("../middleware/authorization"); // authorization middleware
 
-  // Get role API
+  // VIEW ROLES
   app.get("/role", authenticate, manageRole, (req, res) => {
     connection.query(`select * from role`, (err, resp) => {
       if (err) throw err;
@@ -10,6 +14,7 @@ var roleController = (app) => {
     });
   });
 
+  // VIEW ROLES BY ID
   app.get("/role/:id", authenticate, manageRole, (req, res) => {
     connection.query(
       `select * from role where id = ${req.params.id}`,
@@ -21,7 +26,7 @@ var roleController = (app) => {
     );
   });
 
-  // Delete an role API
+  // DELETE ROLES
   app.delete("/role/:id", authenticate, manageRole, (req, res) => {
     connection.query(
       `delete from role where id = ${req.params.id}`,
@@ -32,12 +37,11 @@ var roleController = (app) => {
     );
   });
 
-  // REST API to Insert role
+  // CREATE ROLES
   app.post("/role", authenticate, manageRole, (req, res) => {
     if (!req.body.roleName || !req.body.roleDescription)
       return res.status(400).send("Please fill all required fields");
 
-    // INSERT into database
     connection.query(
       `insert into role (roleName,roleDescription) values 
               ('${req.body.roleName}',
@@ -50,16 +54,86 @@ var roleController = (app) => {
     );
   });
 
-  //rest api to update role into mysql database
+  // EDIT ROLES
   app.put("/role/:id", authenticate, manageRole, (req, res) => {
+    let { roleName, roleDescription } = req.body;
     connection.query(
-      `update role set roleName = '${req.body.roleName}', roleDescription = '${req.body.roleDescription}' where id=${req.params.id}`,
-      (err, response) => {
-        if (err) throw err;
-        res.send("role edited Successfully");
+      `SELECT * FROM role WHERE id=${req.params.id}`,
+      (err, db_res) => {
+        if (err) {
+          res.send(err);
+        } else if (db_res.length < 1) {
+          res.status(404).send(`Error! role does not exist.`);
+        } else {
+          let roles = db_res;
+          if (roleName == undefined) roleName = roles[0].roleName;
+
+          if (roleDescription == undefined)
+            roleDescription = roles[0].roleDescription;
+          connection.query(
+            `update role set roleName = '${roleName}', roleDescription = '${roleDescription}' where id=${req.params.id}`,
+            (err, response) => {
+              if (err) throw err;
+              res.send("role edited Successfully");
+            }
+          );
+        }
       }
     );
   });
+
+  // ASSIGN ROLE TO USER
+  app.post(
+    "/assignRole/:roleId/:userId",
+    authenticate,
+    manageRole,
+    (req, res) => {
+      let { roleId, userId } = req.params;
+      if (!roleId || !userId)
+        return res.status(400).send("Please input valid parameters");
+
+      // Check if user already has a role and delete current role
+      connection.query(
+        `select * from user_role where userId=${userId}`,
+        (err, resp) => {
+          if (err) return res.send(err.sqlMessage);
+          if (resp.length > 0) {
+            connection.query(
+              `delete from user_role where userId = ${userId}`,
+              (error, resp1) => {
+                if (error) return res.send(error.sqlMessage);
+              }
+            );
+          }
+          // Assign new role to the user
+          connection.query(
+            `insert into user_role values 
+              ('','${roleId}',
+              '${userId}')`,
+            (error, resp1) => {
+              if (error) return res.send(error.sqlMessage);
+              res.send(`User ID ${userId} has been assigned role ID ${roleId}`);
+            }
+          );
+        }
+      );
+    }
+  );
 };
 
 module.exports = roleController;
+
+/*
+connection.query(
+        `select * from user_role where userId=${userId}`,
+        (err, resp) => {
+          if (err) return res.send(err.sqlMessage);
+          if (resp.length > 0) {
+            connection.query(
+              `delete from user_role where userId = ${userId}`,
+              (error, resp1) => {
+                if (error) return res.send(error.sqlMessage);
+              }
+            );
+          }
+*/

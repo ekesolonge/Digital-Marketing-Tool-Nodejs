@@ -55,6 +55,30 @@ var permissionController = (app) => {
       }
     );
   });
+
+  // ASSIGN PERMISSION TO ROLE
+  app.post(
+    "/assignPermission/:roleId/:permissionId",
+    authenticate,
+    managePermission,
+    (req, res) => {
+      let { roleId, permissionId } = req.params;
+      if (!roleId || !permissionId)
+        return res.status(400).send("Please input valid parameters");
+
+      connection.query(
+        `insert into role_permission values 
+              ('','${roleId}',
+              '${permissionId}')`,
+        (error, resp1) => {
+          if (error) return res.send(error.sqlMessage);
+          res.send(
+            `Permission ID ${permissionId} has been assigned to role ID ${roleId}`
+          );
+        }
+      );
+    }
+  );
 };
 
 module.exports = permissionController;
