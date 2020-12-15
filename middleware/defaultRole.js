@@ -1,4 +1,4 @@
-const assignRole = (id) => {
+const defaultRole = (id) => {
   const connection = require("../models/db");
   connection.query(
     `insert into user_role (roleId,userId) values(2,${id})`,
@@ -7,4 +7,4 @@ const assignRole = (id) => {
     }
   );
 };
-module.exports = assignRole;
+module.exports = defaultRole;

@@ -2,7 +2,7 @@ const express = require("express"); // express module
 const router = express.Router(); // router
 const { authenticate } = require("../middleware/authorization"); // authorization middleware
 
-// import contactUsControllers
+// import contactUsController
 const {
   sendContact,
   getContacts,

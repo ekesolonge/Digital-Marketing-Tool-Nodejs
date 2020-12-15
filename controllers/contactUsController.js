@@ -25,7 +25,6 @@ const sendContact = (req, res, next) => {
 const getContacts = (req, res, next) => {
   connection.query(`select * from contact_us`, (err, resp) => {
     if (err) throw err;
-    console.log(req.user.data);
     res.send(resp);
   });
 };
