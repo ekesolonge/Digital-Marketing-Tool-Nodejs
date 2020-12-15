@@ -1,103 +1,29 @@
 const express = require("express"); // express module
 const router = express.Router(); // router
-const connection = require("../models/db"); // database module
 const { authenticate } = require("../middleware/authorization"); // authorization middleware
-const Joi = require("joi"); // validator
 
-// get emailTemplates
-router.get("/", authenticate, (req, res) => {
-  connection.query(`select * from email_templates`, (err, resp) => {
-    if (err) throw err;
-    res.send(resp);
-  });
-});
+// import emailTemplateControllers
+const {
+  getEmailTemplates,
+  getEmailTemplateById,
+  createEmailTemplate,
+  editEmailTemplate,
+  deleteEmailTemplate,
+} = require("../controllers/emailTemplateController");
 
-// get emailTemplates by id
-router.get("/:id", authenticate, (req, res) => {
-  connection.query(
-    `select * from email_templates where id = ${req.params.id}`,
-    (err, resp) => {
-      if (err || resp.length < 1)
-        return res.status(404).send("Template does not exist.");
-      res.send(resp[0]);
-    }
-  );
-});
+// GET EMAIL TEMPLATES
+router.get("/", authenticate, getEmailTemplates);
 
-// Create new emailTemplate
-router.post("/", authenticate, (req, res) => {
-  const { error } = validateTemplate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+// GET EMAIL TEMPLATES BY ID
+router.get("/:id", authenticate, getEmailTemplateById);
 
-  // INSERT into database
-  connection.query(
-    `insert into email_templates (user_id,name,json,html) values('${req.user.data.userId}','${req.body.name}','${req.body.json}','${req.body.html}')`,
-    (err, resp) => {
-      if (err) return res.status(400).send(err);
-      res.send("Email Template created successfully.");
-    }
-  );
-});
+// CREATE NEW EMAIL TEMPLATE
+router.post("/", authenticate, createEmailTemplate);
 
-// Edit emailTemplates
-router.put("/:id", authenticate, (req, res) => {
-  connection.query(
-    `SELECT * FROM email_templates WHERE id=${req.params.id}`,
-    (err, db_res) => {
-      if (err) {
-        res.send(err);
-      } else if (db_res.length < 1) {
-        res.status(404).send(`No record found at ID ${req.params.id}`);
-      } else {
-        let email_templates = db_res;
-        let user_id = req.user.data.userId;
-        let name = req.body.name;
-        let json = req.body.json;
-        let html = req.body.html;
-        let id = req.params.id;
-        if (user_id == undefined) {
-          user_id = email_templates[0].user_id;
-        }
-        if (name == undefined) {
-          name = email_templates[0].name;
-        }
-        if (json == undefined) {
-          json = email_templates[0].json;
-        }
-        if (html == undefined) {
-          html = email_templates[0].html;
-        }
-        let sql = `update email_templates set user_id = '${user_id}', name = '${name}', json = '${json}', html = '${html}' where id = ${id}`;
-        connection.query(sql, (err, db_res) => {
-          if (err) return res.status(400).send(err);
-          res.send(`Email Template Updated Successfully at ID: ${id}!`);
-        });
-      }
-    }
-  );
-});
+// EDIT EMAIL TEMPLATES
+router.put("/:id", authenticate, editEmailTemplate);
 
-// DELETE emailTemplate
-router.delete("/:id", authenticate, (req, res) => {
-  connection.query(
-    `delete from email_templates where id = ${req.params.id}`,
-    (err, resp) => {
-      if (resp.affectedRows === 0)
-        return res.status(404).send("Template does not exist.");
-      if (err) return res.send(err);
-      res.send("Email Template successfully deleted.");
-    }
-  );
-});
-
-function validateTemplate(template) {
-  const schema = Joi.object({
-    name: Joi.string().min(3).required(),
-    json: Joi.string().empty("").required(),
-    html: Joi.string().empty("").required(),
-  });
-
-  return schema.validate(template);
-}
+// DELETE EMAIL TEMPLATE
+router.delete("/:id", authenticate, deleteEmailTemplate);
 
 module.exports = router;
