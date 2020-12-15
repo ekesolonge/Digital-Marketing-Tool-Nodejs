@@ -92,13 +92,29 @@ var roleController = (app) => {
       if (!roleId || !userId)
         return res.status(400).send("Please input valid parameters");
 
+      // Check if user already has a role and delete current role
       connection.query(
-        `insert into user_role values 
+        `select * from user_role where userId=${userId}`,
+        (err, resp) => {
+          if (err) return res.send(err.sqlMessage);
+          if (resp.length > 0) {
+            connection.query(
+              `delete from user_role where userId = ${userId}`,
+              (error, resp1) => {
+                if (error) return res.send(error.sqlMessage);
+              }
+            );
+          }
+          // Assign new role to the user
+          connection.query(
+            `insert into user_role values 
               ('','${roleId}',
               '${userId}')`,
-        (error, resp1) => {
-          if (error) return res.send(error.sqlMessage);
-          res.send(`User ID ${userId} has been assigned role ID ${roleId}`);
+            (error, resp1) => {
+              if (error) return res.send(error.sqlMessage);
+              res.send(`User ID ${userId} has been assigned role ID ${roleId}`);
+            }
+          );
         }
       );
     }
@@ -106,3 +122,18 @@ var roleController = (app) => {
 };
 
 module.exports = roleController;
+
+/*
+connection.query(
+        `select * from user_role where userId=${userId}`,
+        (err, resp) => {
+          if (err) return res.send(err.sqlMessage);
+          if (resp.length > 0) {
+            connection.query(
+              `delete from user_role where userId = ${userId}`,
+              (error, resp1) => {
+                if (error) return res.send(error.sqlMessage);
+              }
+            );
+          }
+*/
