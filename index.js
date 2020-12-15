@@ -14,6 +14,8 @@ const newsletter = require("./controllers/newsletterController"); // newsletterC
 const payment = require("./controllers/payment"); // payment module
 const stickyNote = require("./controllers/sticky_note"); // stickyNote module
 const subscriber_group = require("./controllers/subscriber_group"); //subscriber_group module
+const roleController = require("./controllers/roleController"); //roleController module
+const permissionController = require("./controllers/permissionController"); //permissionController module
 
 // Dynamic port listener
 const port = process.env.PORT || 3000; // set port
@@ -32,6 +34,8 @@ newsletter(app);
 payment(app);
 stickyNote(app);
 subscriber_group(app);
+roleController(app);
+permissionController(app);
 
 // Listen on port
 app.listen(port, () => console.log(`Listening on port ${port}...`));
