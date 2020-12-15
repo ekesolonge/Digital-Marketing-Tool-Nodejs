@@ -8,6 +8,7 @@ const { authenticate, manageUser } = require("../middleware/authorization"); // 
 const assignRole = require("../middleware/defaultRole");
 const Joi = require("joi"); // validator
 const upload = require("../middleware/uploadImage");
+const logTrail = require("../middleware/auditTrail");
 
 router.get("/", authenticate, manageUser, (req, res) => {
   // Get users
@@ -242,12 +243,18 @@ router.post("/login", (req, res) => {
     (err, resp) => {
       if (err || resp.length < 1) {
         res.statusCode = 401;
-        res.send("Invalid username and password");
+        res.send("Invalid username and password.");
       } else {
         bcrypt.compare(req.body.password, resp[0].password, (err, result) => {
           if (result === false) {
             res.statusCode = 401;
             res.send("Invalid username and password");
+            let trail = {
+              actor: "anonymous",
+              action: `anonymous user ${req.body.username} login attempt failed`,
+              type: "danger",
+            };
+            logTrail(trail);
           }
           if (result === true) {
             // Check permissions
@@ -268,6 +275,13 @@ router.post("/login", (req, res) => {
                   accessToken: token,
                 };
                 res.send(tokenData);
+
+                let trail = {
+                  actor: req.body.username,
+                  action: `successful login`,
+                  type: "success",
+                };
+                logTrail(trail);
               }
             );
           }
