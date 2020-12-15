@@ -5,12 +5,12 @@ const bodyParser = require("body-parser"); // body-parser middleware
 const users = require("./routes/users");
 const emailTemplate = require("./routes/emailTemplates");
 const audience = require("./routes/audience");
+const contactUs = require("./routes/contactUs");
+const newsletter = require("./routes/newsletter");
 
 const suggestions = require("./controllers/suggestions"); //Suggestions Controller
 const reply = require("./controllers/reply"); //Reply Controller
 const billing_info = require("./controllers/billing_info"); //Reply Controller
-const contactUs = require("./controllers/contactUsController"); // contactUsController module
-const newsletter = require("./controllers/newsletterController"); // newsletterController module
 const payment = require("./controllers/payment"); // payment module
 const stickyNote = require("./controllers/sticky_note"); // stickyNote module
 const subscriber_group = require("./controllers/subscriber_group"); //subscriber_group module
@@ -26,11 +26,12 @@ app.use(bodyParser.json()); // Middleware use with express
 app.use("/api/users", users);
 app.use("/api/emailTemplates", emailTemplate);
 app.use("/api/audience", audience);
+app.use("/api/contactUs", contactUs);
+app.use("/api/newsletter", newsletter);
+
 suggestions(app);
 reply(app);
 billing_info(app);
-contactUs(app);
-newsletter(app);
 payment(app);
 stickyNote(app);
 subscriber_group(app);

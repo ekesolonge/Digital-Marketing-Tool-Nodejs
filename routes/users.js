@@ -1,23 +1,20 @@
 require("dotenv").config();
 const express = require("express"); // express module
 const router = express.Router(); // router
-const connection = require("../models/db");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const { authenticate, manageUser } = require("../middleware/authorization"); // authorization middleware
-const assignRole = require("../middleware/defaultRole");
-const Joi = require("joi"); // validator
 const upload = require("../middleware/uploadImage");
-const logTrail = require("../middleware/auditTrail");
+const {
+  getUsers,
+  getUserById,
+  deleteUser,
+  createUser,
+  editUser,
+  signup,
+  login,
+} = require("../controllers/userControllers");
 
-router.get("/", authenticate, manageUser, (req, res) => {
-  // Get users
-  connection.query(`select * from users`, (err, resp) => {
-    if (err) throw err;
-    resp.map((x) => delete x.password);
-    res.send(resp);
-  });
-});
+//GET ALL USERS
+router.get("/", authenticate, manageUser, getUsers);
 
 router.get("/:id", authenticate, manageUser, (req, res) => {
   connection.query(
@@ -290,35 +287,5 @@ router.post("/login", (req, res) => {
     }
   );
 });
-
-// Joi validation function
-function validateSignup(signup) {
-  const pattern =
-    "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
-
-  const schema = Joi.object({
-    firstName: Joi.string().min(2).required(),
-    lastName: Joi.string().min(2).required(),
-    username: Joi.string().min(5).required(),
-    tel: Joi.string().empty("").min(11).max(16),
-    password: Joi.string()
-      .required()
-      .min(8)
-      .max(20)
-      .regex(RegExp(pattern))
-      .messages({
-        "string.min": `password should have a minimum length of {#limit}`,
-        "string.max": `password should have a maximum length of {#limit}`,
-        "any.required": `password is a required field`,
-        "string.pattern.base": `password should contain at least one uppercase letter, one lowercase letter, one number and one special character`,
-      }),
-    email: Joi.string().email({
-      minDomainSegments: 2,
-      tlds: { allow: ["com", "net"] },
-    }),
-  });
-
-  return schema.validate(signup);
-}
 
 module.exports = router;
