@@ -2,7 +2,7 @@ require("dotenv").config();
 const connection = require("../models/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const assignRole = require("../middleware/defaultRole");
+const defaultRole = require("../middleware/defaultRole");
 const Joi = require("joi"); // validator
 const logTrail = require("../middleware/auditTrail");
 
@@ -93,7 +93,7 @@ const createUser = (req, res, next) => {
             (error, resp2) => {
               if (error) return res.send(error.sqlMessage);
               res.send("User successfully created.");
-              assignRole(resp2.insertId); // assigns user role to new users
+              defaultRole(resp2.insertId); // assigns user role to new users
               res.end();
             }
           );
@@ -168,7 +168,6 @@ const editUser = (req, res, next) => {
 const signup = (req, res, next) => {
   // Joi validation
   const { error } = validateSignup(req.body);
-  console.log(error);
   if (error) return res.status(400).send(error.details[0].message);
 
   let {
@@ -217,7 +216,7 @@ const signup = (req, res, next) => {
             (error, resp2) => {
               if (error) return res.send(error.sqlMessage);
               res.send("User successfully created.");
-              assignRole(resp2.insertId); // assigns user role to new users
+              defaultRole(resp2.insertId); // assigns user role to new users
               res.end();
             }
           );

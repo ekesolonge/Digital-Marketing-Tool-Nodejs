@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express"); // express module
 const router = express.Router(); // router
 const { authenticate, manageUser } = require("../middleware/authorization"); // authorization middleware
-const upload = require("../middleware/uploadImage");
+const upload = require("../middleware/uploadImage"); // file upload
+// import userControllers
 const {
   getUsers,
   getUserById,
