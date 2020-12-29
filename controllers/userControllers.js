@@ -239,9 +239,11 @@ const login = (req, res, next) => {
           if (result === false) {
             res.statusCode = 401;
             res.send("Invalid username and password");
+
+            // Audit Trail
             let trail = {
               actor: "anonymous",
-              action: `anonymous user ${req.body.username} login attempt failed`,
+              action: `anonymous user: ${req.body.username} failed login attempt`,
               type: "danger",
             };
             logTrail(trail);
